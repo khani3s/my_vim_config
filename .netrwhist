@@ -1,6 +1,9 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhist_cnt =4
-let g:netrw_dirhist_1='/home/khani3s/rails_projects/sample_app'
-let g:netrw_dirhist_2='/home/khani3s/rails_projects/sample_app/app'
-let g:netrw_dirhist_3='/home/khani3s/rails_projects/sample_app/app/helpers'
+let g:netrw_dirhist_cnt =7
+let g:netrw_dirhist_1='/home/khani3s/rails_projects/sample_app/app'
+let g:netrw_dirhist_2='/home/khani3s/rails_projects/sample_app/app/controllers'
+let g:netrw_dirhist_3='/home/khani3s/rails_projects/sample_app/app'
 let g:netrw_dirhist_4='/home/khani3s/rails_projects/sample_app'
+let g:netrw_dirhist_5='/home/khani3s/rails_projects/sample_app/config'
+let g:netrw_dirhist_6='/home/khani3s/rails_projects/nane'
+let g:netrw_dirhist_7='/home/khani3s'

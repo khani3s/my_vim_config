@@ -2,7 +2,7 @@
 UseVimball
 finish
 ruby/command-t/controller.rb	[[[1
-317
+330
 # Copyright 2010-2011 Wincent Colaiuta. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@ ruby/command-t/controller.rb	[[[1
 # POSSIBILITY OF SUCH DAMAGE.
 
 require 'command-t/finder/buffer_finder'
+require 'command-t/finder/jump_finder'
 require 'command-t/finder/file_finder'
 require 'command-t/match_window'
 require 'command-t/prompt'
@@ -38,22 +39,25 @@ module CommandT
 
     def initialize
       @prompt = Prompt.new
-      @buffer_finder = CommandT::BufferFinder.new
-      set_up_file_finder
-      set_up_max_height
     end
 
     def show_buffer_finder
       @path          = VIM::pwd
-      @active_finder = @buffer_finder
+      @active_finder = buffer_finder
+      show
+    end
+
+    def show_jump_finder
+      @path          = VIM::pwd
+      @active_finder = jump_finder
       show
     end
 
     def show_file_finder
       # optional parameter will be desired starting directory, or ""
       @path             = File.expand_path(::VIM::evaluate('a:arg'), VIM::pwd)
-      @file_finder.path = @path
-      @active_finder    = @file_finder
+      @active_finder    = file_finder
+      file_finder.path  = @path
       show
     rescue Errno::ENOENT
       # probably a problem with the optional parameter
@@ -74,8 +78,8 @@ module CommandT
     end
 
     def flush
-      set_up_max_height
-      set_up_file_finder
+      @max_height   = nil
+      @file_finder  = nil
     end
 
     def handle_key
@@ -170,17 +174,8 @@ module CommandT
       clear # clears prompt and lists matches
     end
 
-    def set_up_max_height
-      @max_height = get_number('g:CommandTMaxHeight') || 0
-    end
-
-    def set_up_file_finder
-      @file_finder = CommandT::FileFinder.new nil,
-        :max_files              => get_number('g:CommandTMaxFiles'),
-        :max_depth              => get_number('g:CommandTMaxDepth'),
-        :always_show_dot_files  => get_bool('g:CommandTAlwaysShowDotFiles'),
-        :never_show_dot_files   => get_bool('g:CommandTNeverShowDotFiles'),
-        :scan_dot_directories   => get_bool('g:CommandTScanDotDirectories')
+    def max_height
+      @max_height ||= get_number('g:CommandTMaxHeight') || 0
     end
 
     def exists? name
@@ -310,13 +305,31 @@ module CommandT
     def match_limit
       limit = VIM::Screen.lines - 5
       limit = 1 if limit < 0
-      limit = [limit, @max_height].min if @max_height > 0
+      limit = [limit, max_height].min if max_height > 0
       limit
     end
 
     def list_matches
       matches = @active_finder.sorted_matches_for @prompt.abbrev, :limit => match_limit
       @match_window.matches = matches
+    end
+
+    def buffer_finder
+      @buffer_finder ||= CommandT::BufferFinder.new
+    end
+
+    def file_finder
+      @file_finder ||= CommandT::FileFinder.new nil,
+        :max_depth              => get_number('g:CommandTMaxDepth'),
+        :max_files              => get_number('g:CommandTMaxFiles'),
+        :max_caches             => get_number('g:CommandTMaxCachedDirectories'),
+        :always_show_dot_files  => get_bool('g:CommandTAlwaysShowDotFiles'),
+        :never_show_dot_files   => get_bool('g:CommandTNeverShowDotFiles'),
+        :scan_dot_directories   => get_bool('g:CommandTScanDotDirectories')
+    end
+
+    def jump_finder
+      @jump_finder ||= CommandT::JumpFinder.new
     end
   end # class Controller
 end # module commandT
@@ -428,6 +441,43 @@ module CommandT
     end
   end # class FileFinder
 end # CommandT
+ruby/command-t/finder/jump_finder.rb	[[[1
+35
+# Copyright 2011 Wincent Colaiuta. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+require 'command-t/ext' # CommandT::Matcher
+require 'command-t/scanner/jump_scanner'
+require 'command-t/finder'
+
+module CommandT
+  class JumpFinder < Finder
+    def initialize
+      @scanner = JumpScanner.new
+      @matcher = Matcher.new @scanner, :always_show_dot_files => true
+    end
+  end # class JumpFinder
+end # module CommandT
 ruby/command-t/finder.rb	[[[1
 52
 # Copyright 2010-2011 Wincent Colaiuta. All rights reserved.
@@ -483,7 +533,7 @@ module CommandT
   end # class Finder
 end # CommandT
 ruby/command-t/match_window.rb	[[[1
-387
+390
 # Copyright 2010-2011 Wincent Colaiuta. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -524,8 +574,9 @@ module CommandT
       # save existing window dimensions so we can restore them later
       @windows = []
       (0..(::VIM::Window.count - 1)).each do |i|
-        window = OpenStruct.new :index => i, :height => ::VIM::Window[i].height
-        @windows << window
+        @windows << OpenStruct.new(:index   => i,
+                                   :height  => ::VIM::Window[i].height,
+                                   :width   => ::VIM::Window[i].width)
       end
 
       # global settings (must manually save and restore)
@@ -735,16 +786,25 @@ module CommandT
     end
 
     def restore_window_dimensions
-      # sort from tallest to shortest
-      @windows.sort! { |a, b| b.height <=> a.height }
+      # sort from tallest to shortest, tie-breaking on window width
+      @windows.sort! do |a, b|
+        order = b.height <=> a.height
+        if order.zero?
+          b.width <=> a.width
+        else
+          order
+        end
+      end
 
       # starting with the tallest ensures that there are no constraints
       # preventing windows on the side of vertical splits from regaining
       # their original full size
       @windows.each do |w|
         # beware: window may be nil
-        window = ::VIM::Window[w.index]
-        window.height = w.height if window
+        if window = ::VIM::Window[w.index]
+          window.height = w.height
+          window.width  = w.width
+        end
       end
     end
 
@@ -825,20 +885,13 @@ module CommandT
     end
 
     def get_cursor_highlight
-      # as :highlight returns nothing and only prints,
-      # must redirect its output to a variable
-      ::VIM::command 'silent redir => g:command_t_cursor_highlight'
-
-      # force 0 verbosity to ensure origin information isn't printed as well
-      ::VIM::command 'silent! 0verbose highlight Cursor'
-      ::VIM::command 'silent redir END'
-
       # there are 3 possible formats to check for, each needing to be
       # transformed in a certain way in order to reapply the highlight:
       #   Cursor xxx guifg=bg guibg=fg      -> :hi! Cursor guifg=bg guibg=fg
       #   Cursor xxx links to SomethingElse -> :hi! link Cursor SomethingElse
       #   Cursor xxx cleared                -> :hi! clear Cursor
-      highlight = ::VIM::evaluate 'g:command_t_cursor_highlight'
+      highlight = VIM::capture 'silent! 0verbose highlight Cursor'
+
       if highlight =~ /^Cursor\s+xxx\s+links to (\w+)/
         "link Cursor #{$~[1]}"
       elsif highlight =~ /^Cursor\s+xxx\s+cleared/
@@ -1083,7 +1136,7 @@ module CommandT
   end # class BufferScanner
 end # module CommandT
 ruby/command-t/scanner/file_scanner.rb	[[[1
-94
+101
 # Copyright 2010-2011 Wincent Colaiuta. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -1114,39 +1167,46 @@ module CommandT
   # Reads the current directory recursively for the paths to all regular files.
   class FileScanner < Scanner
     class FileLimitExceeded < ::RuntimeError; end
+    attr_accessor :path
 
     def initialize path = Dir.pwd, options = {}
+      @paths                = {}
+      @paths_keys           = []
       @path                 = path
       @max_depth            = options[:max_depth] || 15
       @max_files            = options[:max_files] || 10_000
+      @max_caches           = options[:max_caches] || 1
       @scan_dot_directories = options[:scan_dot_directories] || false
     end
 
     def paths
-      return @paths unless @paths.nil?
+      return @paths[@path] if @paths.has_key?(@path)
       begin
-        @paths = []
-        @depth = 0
-        @files = 0
-        @prefix_len = @path.chomp('/').length
-        add_paths_for_directory @path, @paths
+        ensure_cache_under_limit
+        @paths[@path] = []
+        @depth        = 0
+        @files        = 0
+        @prefix_len   = @path.chomp('/').length
+        add_paths_for_directory @path, @paths[@path]
       rescue FileLimitExceeded
       end
-      @paths
+      @paths[@path]
     end
 
     def flush
-      @paths = nil
-    end
-
-    def path= str
-      if @path != str
-        @path = str
-        flush
-      end
+      @paths = {}
     end
 
   private
+
+    def ensure_cache_under_limit
+      # Ruby 1.8 doesn't have an ordered hash, so use a separate stack to
+      # track and expire the oldest entry in the cache
+      if @max_caches > 0 && @paths_keys.length >= @max_caches
+        @paths.delete @paths_keys.shift
+      end
+      @paths_keys << @path
+    end
 
     def path_excluded? path
       # first strip common prefix (@path) from path to match VIM's behavior
@@ -1177,6 +1237,61 @@ module CommandT
       # skip over directories for which we don't have access
     end
   end # class FileScanner
+end # module CommandT
+ruby/command-t/scanner/jump_scanner.rb	[[[1
+53
+# Copyright 2011 Wincent Colaiuta. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+require 'command-t/vim'
+require 'command-t/vim/path_utilities'
+require 'command-t/scanner'
+
+module CommandT
+  # Returns a list of files in the jumplist.
+  class JumpScanner < Scanner
+    include VIM::PathUtilities
+
+    def paths
+      jumps_with_filename = jumps.lines.select do |line|
+        line_contains_filename?(line)
+      end
+      filenames = jumps_with_filename[1..-2].map do |line|
+        relative_path_under_working_directory line.split[3]
+      end
+      filenames.sort.uniq
+    end
+
+  private
+
+    def line_contains_filename? line
+      line.split.count > 3
+    end
+
+    def jumps
+      VIM::capture 'silent jumps'
+    end
+  end # class JumpScanner
 end # module CommandT
 ruby/command-t/scanner.rb	[[[1
 28
@@ -1288,7 +1403,7 @@ module CommandT
   end # class Settings
 end # module CommandT
 ruby/command-t/stub.rb	[[[1
-46
+42
 # Copyright 2010-2011 Wincent Colaiuta. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -1318,12 +1433,8 @@ module CommandT
                     'Please see INSTALLATION and TROUBLE-SHOOTING in the help',
                     'For more information type:    :help command-t']
 
-    def show_file_finder
-      warn *@@load_error
-    end
-
-    def flush
-      warn *@@load_error
+    [:flush, :show_buffer_finder, :show_file_finder].each do |method|
+      define_method(method.to_sym) { warn *@@load_error }
     end
 
   private
@@ -1452,8 +1563,8 @@ module CommandT
   end # module VIM
 end # module CommandT
 ruby/command-t/vim.rb	[[[1
-43
-# Copyright 2010 Wincent Colaiuta. All rights reserved.
+51
+# Copyright 2010-2011 Wincent Colaiuta. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -1487,6 +1598,14 @@ module CommandT
 
     def self.pwd
       ::VIM::evaluate 'getcwd()'
+    end
+
+    # Execute cmd, capturing the output into a variable and returning it.
+    def self.capture cmd
+      ::VIM::command 'silent redir => g:command_t_captured_output'
+      ::VIM::command cmd
+      ::VIM::command 'silent redir END'
+      ::VIM::evaluate 'g:command_t_captured_output'
     end
 
     # Escape a string for safe inclusion in a Vim single-quoted string
@@ -2099,7 +2218,7 @@ ruby/command-t/depend	[[[1
 
 CFLAGS += -std=c99 -Wall -Wextra -Wno-unused-parameter
 doc/command-t.txt	[[[1
-786
+817
 *command-t.txt* Command-T plug-in for Vim         *command-t*
 
 CONTENTS                                        *command-t-contents*
@@ -2434,6 +2553,14 @@ COMMANDS                                        *command-t-commands*
                 except that the selection is limited to files that
                 you already have open in buffers.
 
+                                                *:CommandTJumps*
+|:CommandTJump| Brings up the Command-T jumplist window.
+                This works exactly like the standard file window,
+                except that the selection is limited to files that
+                you already have in the jumplist. Note that jumps
+                can persist across Vim sessions (see Vim's |jumplist|
+                documentation for more info).
+
                                                 *:CommandTFlush*
 |:CommandTFlush|Instructs the plug-in to flush its path cache, causing
                 the directory to be rescanned for new or deleted paths
@@ -2453,8 +2580,8 @@ By default Command-T comes with only two mappings:
 However, Command-T won't overwrite a pre-existing mapping so if you prefer
 to define different mappings use lines like these in your ~/.vimrc:
 
-  nmap <silent> <Leader>t :CommandT<CR>
-  nmap <silent> <Leader>b :CommandTBuffer<CR>
+  nnoremap <silent> <Leader>t :CommandT<CR>
+  nnoremap <silent> <Leader>b :CommandTBuffer<CR>
 
 Replacing "<Leader>t" or "<Leader>b" with your mapping of choice.
 
@@ -2500,6 +2627,16 @@ Following is a list of all available options:
       The maximum depth (levels of recursion) to be explored when scanning the
       current directory. Any directories at levels beyond this depth will be
       skipped.
+
+                                               *g:CommandTMaxCachedDirectories*
+  |g:CommandTMaxCachedDirectories|                           number (default 1)
+
+      The maximum number of directories whose contents should be cached when
+      recursively scanning. With the default value of 1, each time you change
+      directories the cache will be emptied and Command-T will have to
+      rescan. Higher values will make Command-T hold more directories in the
+      cache, bringing performance at the cost of memory usage. If set to 0,
+      there is no limit on the number of cached directories.
 
                                                *g:CommandTMaxHeight*
   |g:CommandTMaxHeight|                          number (default: 0)
@@ -2667,14 +2804,17 @@ Command-T is written and maintained by Wincent Colaiuta <win@wincent.com>.
 Other contributors that have submitted patches include (in alphabetical
 order):
 
+  Anthony Panozzo
   Daniel Hahler
   Lucas de Vries
+  Marian Schubert
   Matthew Todd
   Mike Lundy
   Scott Bronson
   Steven Moazami
   Sung Pae
   Victor Hugo Borja
+  Woody Peterson
   Zak Johnson
 
 As this was the first Vim plug-in I had ever written I was heavily influenced
@@ -2749,8 +2889,18 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
-
 HISTORY                                         *command-t-history*
+
+1.3.1 (18 December 2011)
+
+- fix jumplist navigation under Ruby 1.9.x (patch from Woody Peterson)
+
+1.3 (27 November 2011)
+
+- added the option to maintain multiple caches when changing among
+  directories; see the accompanying |g:CommandTMaxCachedDirectories| setting
+- added the ability to navigate using the Vim jumplist (patch from Marian
+  Schubert)
 
 1.2.1 (30 April 2011)
 
@@ -2887,7 +3037,7 @@ HISTORY                                         *command-t-history*
 ------------------------------------------------------------------------------
 vim:tw=78:ft=help:
 plugin/command-t.vim	[[[1
-164
+173
 " command-t.vim
 " Copyright 2010-2011 Wincent Colaiuta. All rights reserved.
 "
@@ -2918,15 +3068,16 @@ endif
 let g:command_t_loaded = 1
 
 command CommandTBuffer call <SID>CommandTShowBufferFinder()
+command CommandTJump call <SID>CommandTShowJumpFinder()
 command -nargs=? -complete=dir CommandT call <SID>CommandTShowFileFinder(<q-args>)
 command CommandTFlush call <SID>CommandTFlush()
 
 if !hasmapto(':CommandT<CR>')
-  silent! nmap <unique> <silent> <Leader>t :CommandT<CR>
+  silent! nnoremap <unique> <silent> <Leader>t :CommandT<CR>
 endif
 
 if !hasmapto(':CommandTBuffer<CR>')
-  silent! nmap <unique> <silent> <Leader>b :CommandTBuffer<CR>
+  silent! nnoremap <unique> <silent> <Leader>b :CommandTBuffer<CR>
 endif
 
 function s:CommandTRubyWarning()
@@ -2947,6 +3098,14 @@ endfunction
 function s:CommandTShowFileFinder(arg)
   if has('ruby')
     ruby $command_t.show_file_finder
+  else
+    call s:CommandTRubyWarning()
+  endif
+endfunction
+
+function s:CommandTShowJumpFinder()
+  if has('ruby')
+    ruby $command_t.show_jump_finder
   else
     call s:CommandTRubyWarning()
   endif

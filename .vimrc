@@ -5,9 +5,10 @@ set hlsearch      " Highlight the matches of search
 set ignorecase    " Case-insensitive searching
 
 colorscheme ir_black 
-if !has("gui_running")
-  silent! exec "so ~/.vim/plugin-manual-load/colorsupport.vim"
-endif
+
+" if !has("gui_running")
+"  silent! exec "so ~/.vim/plugin-manual-load/colorsupport.vim"
+" endif
 
 " Hack for visual selection highlight work properly in vim
 hi Visual cterm=reverse

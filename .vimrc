@@ -44,6 +44,10 @@ vmap <leader>c "+y
 map <leader>v "+p
 map <leader>V "+P
 
+" Comments
+vmap <leader># <c-v>I#~ <ESC>
+vmap <leader>3 :s/^#\~ //<CR><ESC> 
+
 " Enable ragtag
 let g:ragtag_global_maps = 1
 

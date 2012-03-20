@@ -3,12 +3,12 @@ set smartindent
 set incsearch     " Highlight the incremental search
 set hlsearch      " Highlight the matches of search
 set ignorecase    " Case-insensitive searching
+set backspace=2   " Allow backspace key to erase previously entered characters
 
 colorscheme ir_black 
-
-" if !has("gui_running")
-"  silent! exec "so ~/.vim/plugin-manual-load/colorsupport.vim"
-" endif
+if !has("gui_running")
+  silent! exec "so ~/.vim/plugin-manual-load/colorsupport.vim"
+endif
 
 " Hack for visual selection highlight work properly in vim
 hi Visual cterm=reverse
@@ -24,6 +24,23 @@ nmap <leader>r <Esc>:w<CR>:! ./%<CR>
 " Shortcut to rapidly toggle line numbers
 nmap <leader>n :set number!<CR>
 
+" Identations
+vmap << <gv
+vmap >> >gv
+vmap = =gv
+
+" Ctrl+X, Ctrl+C and Ctrl+V
+" Only works after installing vim-gnome package on Ubuntu 10.04 (why?)
+vmap <leader>x "+d
+vmap <leader>c "+y
+map <leader>v "+p
+map <leader>V "+P
+
+" Hack for show the cursor correctly
+if has("gui_running")
+  hi Cursor guibg=fg
+endif
+
 " Shortcut to rapidly toggle `set list`
 nmap <leader>l :set list!<CR>
 set listchars=eol:¬
@@ -34,21 +51,8 @@ highlight NonText guifg=#242 ctermfg=61
 " Save as root
 command Wsudo :w !sudo tee >/dev/null %
 
-" Identations
-vmap << <gv
-vmap >> >gv
-vmap = =gv
-
-" Ctrl+X, Ctrl+C and Ctrl+V
-vmap <leader>x "+d
-vmap <leader>c "+y
-map <leader>v "+p
-map <leader>V "+P
-
 " Enable ragtag
 let g:ragtag_global_maps = 1
 
-" Hack for show the cursor correctly
-if has("gui_running")
-  hi Cursor guibg=fg
-endif
+" Disable stop output control 
+inoremap <C-s> <C-o>:update<cr>

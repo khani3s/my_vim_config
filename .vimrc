@@ -24,6 +24,16 @@ nmap <leader>r <Esc>:w<CR>:! ./%<CR>
 " Shortcut to rapidly toggle line numbers
 nmap <leader>n :set number!<CR>
 
+" Shortcut to rapidly toggle `set list`
+nmap <leader>l :set list!<CR>
+set listchars=eol:¬
+set ts=2 sts=2 sw=2 expandtab
+" Highlight for the set list chars
+highlight NonText guifg=#242 ctermfg=61
+
+" Save as root
+command Wsudo :w !sudo tee >/dev/null %
+
 " Identations
 vmap << <gv
 vmap >> >gv
@@ -36,23 +46,17 @@ vmap <leader>c "+y
 map <leader>v "+p
 map <leader>V "+P
 
+" Comments
+vmap <leader># <c-v>I#~ <ESC>
+vmap <leader>3 :s/^#\~ //<CR><ESC> 
+
+" Enable ragtag
+let g:ragtag_global_maps = 1
+
 " Hack for show the cursor correctly
 if has("gui_running")
   hi Cursor guibg=fg
 endif
-
-" Shortcut to rapidly toggle `set list`
-nmap <leader>l :set list!<CR>
-set listchars=eol:¬
-set ts=2 sts=2 sw=2 expandtab
-" Highlight for the set list chars
-highlight NonText guifg=#242 ctermfg=61
-
-" Save as root
-command Wsudo :w !sudo tee >/dev/null %
-
-" Enable ragtag
-let g:ragtag_global_maps = 1
 
 " Disable stop output control 
 inoremap <C-s> <C-o>:update<cr>

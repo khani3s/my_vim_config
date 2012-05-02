@@ -4,6 +4,11 @@ set incsearch     " Highlight the incremental search
 set hlsearch      " Highlight the matches of search
 set ignorecase    " Case-insensitive searching
 
+syntax on
+filetype plugin indent on
+
+call pathogen#infect()
+
 colorscheme ir_black 
 
 " if !has("gui_running")

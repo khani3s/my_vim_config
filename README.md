@@ -3,7 +3,7 @@ How to Use
  
 0. Git Clone into your home directory and rename to .vim
 
-        git clone https://github.com/khani3s/my_vim_config.git
+        git clone https://github.com/khani3s/my_vim_config.git .vim
 
 1. Link the .vimrc
 

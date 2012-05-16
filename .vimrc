@@ -8,6 +8,11 @@ set ignorecase    " Case-insensitive searching
 set backspace=2   " Allow backspace key to erase previously entered characters
 set hidden        " Allow hidden buffers
 
+syntax on
+filetype plugin indent on
+
+call pathogen#infect()
+
 colorscheme ir_black 
 if !has("gui_running")
   colorscheme ir_black_term

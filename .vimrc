@@ -1,14 +1,20 @@
+syntax on
+set shell=bash
 set autoindent
 set smartindent
 set incsearch     " Highlight the incremental search
 set hlsearch      " Highlight the matches of search
 set ignorecase    " Case-insensitive searching
 set backspace=2   " Allow backspace key to erase previously entered characters
+set hidden        " Allow hidden buffers
 
 colorscheme ir_black 
 if !has("gui_running")
-  silent! exec "so ~/.vim/plugin-manual-load/colorsupport.vim"
+  colorscheme ir_black_term
 endif
+
+" Jump to last cursor position
+au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
 
 " Hack for visual selection highlight work properly in vim
 hi Visual cterm=reverse
@@ -19,13 +25,14 @@ hi IndentGuidesOdd  guibg=#070707 ctermbg=234
 hi IndentGuidesEven guibg=#1a1a1a ctermbg=236
 
 " Shortcut to run save and run the current file
-nmap <leader>r <Esc>:w<CR>:! ./%<CR>
+nnoremap <leader>r <Esc>:w<CR>:! ./%<CR>
+nnoremap <leader>R <Esc>:w<CR>:! rspec %<CR>
 
 " Shortcut to rapidly toggle line numbers
-nmap <leader>n :set number!<CR>
+nnoremap <leader>n :set number!<CR>
 
 " Shortcut to rapidly toggle `set list`
-nmap <leader>l :set list!<CR>
+nnoremap <leader>l :set list!<CR>
 set listchars=eol:¬
 set ts=2 sts=2 sw=2 expandtab
 " Highlight for the set list chars
@@ -35,20 +42,20 @@ highlight NonText guifg=#242 ctermfg=61
 command Wsudo :w !sudo tee >/dev/null %
 
 " Identations
-vmap << <gv
-vmap >> >gv
-vmap = =gv
+vnoremap << <gv
+vnoremap >> >gv
+vnoremap = =gv
 
 " Ctrl+X, Ctrl+C and Ctrl+V
 " Only works after installing vim-gnome package on Ubuntu 10.04 (why?)
-vmap <leader>x "+d
-vmap <leader>c "+y
-map <leader>v "+p
-map <leader>V "+P
+vnoremap <leader>x "+d
+vnoremap <leader>c "+y
+nnoremap <leader>v "+p
+nnoremap <leader>V "+P
 
 " Comments
-vmap <leader># <c-v>I#~ <ESC>
-vmap <leader>3 :s/^#\~ //<CR><ESC> 
+vnoremap <leader># <c-v>I#~ <ESC>
+vnoremap <leader>3 :s/^#\~ //<CR><ESC> 
 
 " Enable ragtag
 let g:ragtag_global_maps = 1
@@ -60,3 +67,7 @@ endif
 
 " Disable stop output control 
 inoremap <C-s> <C-o>:update<cr>
+
+" Open vimrc
+nnoremap <leader>ev :vsplit $MYVIMRC<cr>
+nnoremap <leader>es :source $MYVIMRC<cr>

@@ -4,7 +4,7 @@ set background=dark
 if exists("syntax_on")
   syntax reset
 endif
-let g:colors_name = "bla"
+let g:colors_name = "ir_black_term"
 hi Normal guifg=#f6f3e8 guibg=black gui=NONE cterm=NONE ctermfg=15 ctermbg=16
 hi SpecialKey gui=none guifg=Cyan guibg=none cterm=none ctermfg=51 ctermbg=none
 hi NonText gui=bold guifg=Blue guibg=none cterm=bold ctermfg=21 ctermbg=none
@@ -38,7 +38,8 @@ hi SpellLocal gui=undercurl guifg=none guisp=Cyan cterm=undercurl ctermfg=none c
 hi Pmenu gui=none guifg=none guibg=Magenta cterm=none ctermfg=none ctermbg=201
 hi PmenuSel gui=none guifg=none guibg=DarkGrey cterm=none ctermfg=none ctermbg=248
 hi PmenuSbar gui=none guifg=none guibg=Grey cterm=none ctermfg=none ctermbg=250
-hi PmenuThumb gui=reverse guifg=none guibg=none cterm=reverse ctermfg=none ctermbg=none
+"hi PmenuThumb gui=reverse guifg=none guibg=none cterm=reverse ctermfg=none ctermbg=none
+hi PmenuThumb guifg=NONE  guibg=#FF6C60 gui=NONE ctermfg=NONE ctermbg=203 cterm=NONE
 hi TabLine gui=underline guifg=none guibg=DarkGrey cterm=underline ctermfg=none ctermbg=248
 hi TabLineSel gui=bold guifg=none guibg=none cterm=bold ctermfg=none ctermbg=none
 hi TabLineFill gui=reverse guifg=none guibg=none cterm=reverse ctermfg=none ctermbg=none

@@ -1,7 +1,7 @@
 How to Use
 ----------
  
- 0. Git Clone into your home directory and rename to .vim
+0. Git Clone into your home directory and rename to .vim
 
         git clone https://github.com/khani3s/my_vim_config.git
 

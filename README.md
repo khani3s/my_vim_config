@@ -1,20 +1,31 @@
-== My Vim Configuration
+How to Use
+----------
+ 
+ 0. Git Clone into your home directory and rename to .vim
 
-1. Install gvim
+        git clone https://github.com/khani3s/my_vim_config.git
 
-    sudo apt-get install vim-gnome
+1. Link the .vimrc
 
-2. Configure your terminal to accept 256 color
+        ln -s .vim/.vimrc .vimrc
 
-    export TERM=xterm-256color
+2. Install gvim 
 
-3. Open the command-t-1.3.1.vba with vim and run
+        sudo apt-get install vim-gnome 
 
-    so %
+3. Configure your terminal to accept 256 color 
 
-* Press spacebar on "more" or it will not install correctly!
+  For Ubuntu users with Bash and Xterm, append this line to the end of your .bashrc
 
-4. Run the follow commands inside the ruby/command-t folder:
+        export TERM=xterm-256color
 
-    ruby extconf.rb
-    make
+4. Open the command-t-1.3.1.vba with vim and run 
+
+        so % 
+
+  **Press spacebar on every "more" or it will not install correctly!** 
+
+5. Run the follow commands inside the ruby/command-t folder: 
+
+        ruby extconf.rb 
+        make 

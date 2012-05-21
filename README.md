@@ -25,7 +25,11 @@ How to Use
 
   **Press spacebar on every "more" or it will not install correctly!** 
 
-5. Run the follow commands inside the ruby/command-t folder: 
+5. RVM USERS ONLY - Select the system gemset with: 
+
+        rvm system
+
+6. Run the follow commands inside the ruby/command-t folder: 
 
         ruby extconf.rb 
         make 

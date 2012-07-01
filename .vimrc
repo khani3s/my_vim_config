@@ -76,3 +76,6 @@ inoremap <C-s> <C-o>:update<cr>
 " Open vimrc
 nnoremap <leader>ev :vsplit $MYVIMRC<cr>
 nnoremap <leader>es :source $MYVIMRC<cr>
+
+"Grep
+let Grep_Default_Options = '-i' 

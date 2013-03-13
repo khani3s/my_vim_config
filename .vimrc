@@ -2,14 +2,18 @@ syntax on
 set shell=bash
 set autoindent
 set smartindent
-set incsearch     " Highlight the incremental search
-set hlsearch      " Highlight the matches of search
-set ignorecase    " Case-insensitive searching
-set backspace=2   " Allow backspace key to erase previously entered characters
-set hidden        " Allow hidden buffers
+set incsearch             " Highlight the incremental search
+set hlsearch              " Highlight the matches of search
+set ignorecase            " Case-insensitive searching
+set backspace=2           " Allow backspace key to erase previously entered characters
+set hidden                " Allow hidden buffers
 
 syntax on
 filetype plugin indent on
+
+set encoding=utf-8        " Every new file will be utf-8
+set fileformat=unix       " LF is default EOL for new files
+set fileformats=unix,dos  " Empty files will be open as Unix
 
 call pathogen#infect()
 
@@ -42,6 +46,7 @@ nnoremap <leader>w :echo bufname("%")<CR>
 nnoremap <leader>l :set list!<CR>
 set listchars=eol:¬
 set ts=2 sts=2 sw=2 expandtab
+
 " Highlight for the set list chars
 highlight NonText guifg=#242 ctermfg=61
 
@@ -81,3 +86,20 @@ nnoremap <leader>es :source $MYVIMRC<cr>
 
 "Grep
 let Grep_Default_Options = '-i' 
+
+" Kill those f***ing white spaces, EOL, retab, fix encondig and ident the code!
+func! PeaceOfMind()
+  exe "normal mz"
+  %s/\s\+$//ge
+  %s/\s\+$//ge
+  exe "normal `z"
+  exe "set fenc=utf-8"
+  exe "set ff=unix"
+  exe "retab"
+" exe "normal gg=G"
+endfunc
+
+autocmd FileType ruby  :autocmd BufWrite * :call PeaceOfMind()
+autocmd FileType eruby :autocmd BufWrite * :call PeaceOfMind()
+autocmd FileType html  :autocmd BufWrite * :call PeaceOfMind()
+autocmd FileType yaml  :autocmd BufWrite * :call PeaceOfMind()

@@ -36,6 +36,8 @@ nnoremap <leader>R <Esc>:w<CR>:! rspec %<CR>
 " Shortcut to rapidly toggle line numbers
 nnoremap <leader>n :set number!<CR>
 
+nnoremap <leader>w :echo bufname("%")<CR>
+
 " Shortcut to rapidly toggle `set list`
 nnoremap <leader>l :set list!<CR>
 set listchars=eol:¬

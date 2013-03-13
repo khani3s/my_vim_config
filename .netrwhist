@@ -1,5 +1,5 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhist_cnt =8
+let g:netrw_dirhist_cnt =9
 let g:netrw_dirhist_1='/home/khani3s/rails_projects/t2synth'
 let g:netrw_dirhist_2='/home/khani3s/.rvm/gems/ruby-1.9.2-p290@global/gems/ori-0.1.0'
 let g:netrw_dirhist_3='/home/khani3s/ruby_projects/bootcamp-FelipeAugustoNavas-ruby-float'
@@ -8,3 +8,4 @@ let g:netrw_dirhist_5='/home/khani3s/Desktop'
 let g:netrw_dirhist_6='/home/khani3s'
 let g:netrw_dirhist_7='/home/khani3s/rails_projects'
 let g:netrw_dirhist_8='/home/khani3s/rails_projects/dash_test'
+let g:netrw_dirhist_9='/home/khani3s/projects/fitty/app'

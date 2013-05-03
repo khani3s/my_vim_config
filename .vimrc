@@ -7,17 +7,29 @@ set hlsearch              " Highlight the matches of search
 set ignorecase            " Case-insensitive searching
 set backspace=2           " Allow backspace key to erase previously entered characters
 set hidden                " Allow hidden buffers
+set previewheight=25      " Increase the Fugitive Gstatus window
 
 syntax on
 filetype plugin indent on
 
-set encoding=utf-8        " Every new file will be utf-8
-set fileformat=unix       " LF is default EOL for new files
-set fileformats=unix,dos  " Empty files will be open as Unix
+"set encoding=utf-8        " Every new file will be utf-8
+"set fileformat=unix       " LF is default EOL for new files
+"set fileformats=unix,dos  " Empty files will be open as Unix
+
+let g:ruby_debugger_no_maps = 1
+let g:ruby_debugger_progname = 'mvim'
+let g:ruby_debugger_debug_mode = 1
+let g:ruby_debugger_servername = "vim"
 
 call pathogen#infect()
 
-colorscheme ir_black 
+"Always show the status bar
+set laststatus=2
+set nocompatible
+let g:Powerline_symbols = 'fancy'
+"set fillchars+=stl:\ ,stlnc:\
+
+colorscheme ir_black
 if !has("gui_running")
   colorscheme ir_black_term
 endif
@@ -33,12 +45,25 @@ let g:indent_guides_auto_colors = 0
 hi IndentGuidesOdd  guibg=#070707 ctermbg=234
 hi IndentGuidesEven guibg=#1a1a1a ctermbg=236
 
-" Shortcut to run save and run the current file
-nnoremap <leader>r <Esc>:w<CR>:! ./%<CR>
-nnoremap <leader>R <Esc>:w<CR>:! rspec %<CR>
+" Highlight the current cursor line
+set cursorline
+hi CursorLine term=underline ctermbg=236 guibg=#121212
+
+" Shortcut to open Gstatus
+nnoremap <leader>G <Esc>:Gstatus<CR>
+
+" Shortcut to save and run the rspec tests
+nnoremap <leader>r <Esc>:w<CR>:! clear;rspec<CR>
+nnoremap <leader>R <Esc>:w<CR>:! clear;rspec %<CR>
+nnoremap <leader><C-R> <Esc>:w<CR>:call RSpecCurrent() <CR>
+
+function! RSpecCurrent()
+  execute("!clear && rspec " . expand("%p") . ":" . line("."))
+endfunction
 
 " Shortcut to rapidly toggle line numbers
 nnoremap <leader>n :set number!<CR>
+nnoremap <leader>N :set relativenumber!<CR>
 
 nnoremap <leader>w :echo bufname("%")<CR>
 
@@ -66,8 +91,8 @@ nnoremap <leader>v "+p
 nnoremap <leader>V "+P
 
 " Comments
-vnoremap <leader># <c-v>I#~ <ESC>
-vnoremap <leader>3 :s/^#\~ //<CR><ESC> 
+vnoremap <leader># 0<c-v>I#~ <ESC>
+vnoremap <leader>3 :s/^#\~ //<CR><ESC>
 
 " Enable ragtag
 let g:ragtag_global_maps = 1
@@ -77,7 +102,7 @@ if has("gui_running")
   hi Cursor guibg=fg
 endif
 
-" Disable stop output control 
+" Disable stop output control
 inoremap <C-s> <C-o>:update<cr>
 
 " Open vimrc
@@ -85,7 +110,7 @@ nnoremap <leader>ev :vsplit $MYVIMRC<cr>
 nnoremap <leader>es :source $MYVIMRC<cr>
 
 "Grep
-let Grep_Default_Options = '-i' 
+let Grep_Default_Options = '-i'
 
 " Kill those f***ing white spaces, EOL, retab, fix encondig and ident the code!
 func! PeaceOfMind()
@@ -93,8 +118,8 @@ func! PeaceOfMind()
   %s/\s\+$//ge
   %s/\s\+$//ge
   exe "normal `z"
-  exe "set fenc=utf-8"
-  exe "set ff=unix"
+  "exe "set fenc=utf-8"
+  "exe "set ff=unix"
   exe "retab"
 " exe "normal gg=G"
 endfunc
@@ -103,3 +128,14 @@ autocmd FileType ruby  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType eruby :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType html  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType yaml  :autocmd BufWrite * :call PeaceOfMind()
+
+noremap <leader>db  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.toggle_breakpoint()<CR>
+noremap <leader>dv  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.open_variables()<CR>
+noremap <leader>dm  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.open_breakpoints()<CR>
+noremap <leader>dt  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.open_frames()<CR>
+noremap <leader>ds  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.step()<CR>
+noremap <leader>df  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.finish()<CR>
+noremap <leader>dn  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.next()<CR>
+noremap <leader>dc  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.continue()<CR>
+noremap <leader>de  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.exit()<CR>
+noremap <leader>dd  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.remove_breakpoints()<CR>

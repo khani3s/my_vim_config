@@ -69,7 +69,7 @@ nnoremap <leader>w :echo bufname("%")<CR>
 
 " Shortcut to rapidly toggle `set list`
 nnoremap <leader>l :set list!<CR>
-set listchars=eol:¬
+set listchars=eol:¬,trail:~
 set ts=2 sts=2 sw=2 expandtab
 
 " Highlight for the set list chars

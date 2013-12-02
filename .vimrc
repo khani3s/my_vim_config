@@ -1,4 +1,9 @@
 syntax on
+set directory=~/tmp " solve fugitive errors
+set ttyfast " u got a fast terminal
+set ttyscroll=3
+set lazyredraw " to avoid scrolling problems
+
 set shell=bash
 set autoindent
 set smartindent
@@ -7,7 +12,7 @@ set hlsearch              " Highlight the matches of search
 set ignorecase            " Case-insensitive searching
 set backspace=2           " Allow backspace key to erase previously entered characters
 set hidden                " Allow hidden buffers
-set previewheight=25      " Increase the Fugitive Gstatus window
+set previewheight=15      " Increase the Fugitive Gstatus window
 
 syntax on
 filetype plugin indent on
@@ -26,8 +31,12 @@ call pathogen#infect()
 "Always show the status bar
 set laststatus=2
 set nocompatible
+set history=10000
 let g:Powerline_symbols = 'fancy'
 "set fillchars+=stl:\ ,stlnc:\
+
+"Delete closed fugitive buffers
+autocmd BufReadPost fugitive://* set bufhidden=delete
 
 colorscheme ir_black
 if !has("gui_running")
@@ -54,12 +63,29 @@ nnoremap <leader>G <Esc>:Gstatus<CR>
 
 " Shortcut to save and run the rspec tests
 nnoremap <leader>r <Esc>:w<CR>:! clear;rspec<CR>
-nnoremap <leader>R <Esc>:w<CR>:! clear;rspec %<CR>
-nnoremap <leader><C-R> <Esc>:w<CR>:call RSpecCurrent() <CR>
+nnoremap <leader>R <Esc>:w<CR>:call RspecSingle()<CR>
+nnoremap <leader><C-R> <Esc>:w<CR>:call RSpecCurrent()<CR>
 
-function! RSpecCurrent()
-  execute("!clear && rspec " . expand("%p") . ":" . line("."))
-endfunction
+command Ctags :!/usr/local/bin/ctags -R --exclude=.git --exclude=log *
+
+func! RSpecCurrent()
+  if expand('%:t') =~ "_spec.rb"
+    let g:rspec_last_current = expand("%p") . ":" . line(".")
+  endif
+  execute("!clear && " . DetectZeus() . " rspec " . g:rspec_last_current)
+endfunc
+
+func! RspecSingle()
+  if expand('%:t') =~ "_spec.rb"
+    let g:rspec_last_single = expand("%p")
+  endif
+  execute("!clear && " . DetectZeus() . " rspec " . g:rspec_last_single)
+endfunc
+
+func! DetectZeus()
+  echo "Zeus Detected!"
+  return system("if [ -S '.zeus.sock' ]; then echo -n zeus; fi")
+endfunc
 
 " Shortcut to rapidly toggle line numbers
 nnoremap <leader>n :set number!<CR>
@@ -124,7 +150,15 @@ func! PeaceOfMind()
 " exe "normal gg=G"
 endfunc
 
-autocmd FileType ruby  :autocmd BufWrite * :call PeaceOfMind()
+func! RubySyntaxCheck()
+  redir => syntaxcheck
+  exe "!ruby -c %"
+  exe "redraw!"
+  redir END
+  echom syntaxcheck
+endfunc
+
+autocmd FileType ruby  :autocmd BufWrite * :call PeaceOfMind() "| call RubySyntaxCheck()
 autocmd FileType eruby :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType html  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType yaml  :autocmd BufWrite * :call PeaceOfMind()

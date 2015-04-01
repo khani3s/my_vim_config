@@ -1,5 +1,5 @@
 syntax on
-set directory=~/tmp " solve fugitive errors
+set directory=~/tmp// " solve fugitive errors
 set ttyfast " u got a fast terminal
 set ttyscroll=3
 set lazyredraw " to avoid scrolling problems
@@ -58,28 +58,65 @@ hi IndentGuidesEven guibg=#1a1a1a ctermbg=236
 set cursorline
 hi CursorLine term=underline ctermbg=236 guibg=#121212
 
+" Ggrep
+nnoremap <leader>g <Esc>:execute "Ggrep '" . expand("<cword>") . "'"<CR>
+
 " Shortcut to open Gstatus
 nnoremap <leader>G <Esc>:Gstatus<CR>
+
+" Generate Ctags
+command Ctags :!/usr/local/bin/ctags -R --exclude=.git --exclude=log *
 
 " Shortcut to save and run the rspec tests
 nnoremap <leader>r <Esc>:w<CR>:! clear;rspec<CR>
 nnoremap <leader>R <Esc>:w<CR>:call RspecSingle()<CR>
 nnoremap <leader><C-R> <Esc>:w<CR>:call RSpecCurrent()<CR>
 
-command Ctags :!/usr/local/bin/ctags -R --exclude=.git --exclude=log *
+" Syntax Checking
+"nnoremap <leader>s <Esc>:w<CR>:!ruby -c %<CR>
+nnoremap <leader>s <Esc>:w<CR>:RuboCop()<CR>
+
+" Complexity Checking
+nnoremap <leader>C <Esc>:w<CR>:!flog -e --all %<CR>
+nnoremap <leader><C-C> <Esc>:w<CR>:call ShowComplexity()<CR>
+
+" Complexity Warning
+let g:rubycomplexity_enable_at_startup = 0
+let g:rubycomplexity_medium_limit = 22
+let g:rubycomplexity_high_limit = 60
+
+function! LoadAndDisplayRSpecQuickfix()
+  let quickfix_filename = ".git/quickfix.out"
+  if filereadable(quickfix_filename) && getfsize(quickfix_filename) != 0
+    silent execute ":cfile " . quickfix_filename
+    botright cwindow
+    cc
+  else
+    redraw!
+    echohl WarningMsg | echo "Quickfix file " . quickfix_filename . " is missing or empty." | echohl None
+  endif
+endfunction
+
+noremap <Leader>q :call LoadAndDisplayRSpecQuickfix()<CR>
 
 func! RSpecCurrent()
   if expand('%:t') =~ "_spec.rb"
     let g:rspec_last_current = expand("%p") . ":" . line(".")
   endif
-  execute("!clear && " . DetectZeus() . " rspec " . g:rspec_last_current)
+  execute "compiler rspec | set makeprg=(clear\\ &&\\ " . DetectZeus() . "\\ rspec\\ --color\\ " . g:rspec_last_current . ")"
+  make!
+  cw
+  cc
 endfunc
 
 func! RspecSingle()
   if expand('%:t') =~ "_spec.rb"
     let g:rspec_last_single = expand("%p")
   endif
-  execute("!clear && " . DetectZeus() . " rspec " . g:rspec_last_single)
+  execute "compiler rspec | set makeprg=(clear\\ &&\\ " . DetectZeus() . "\\ rspec\\ --color\\ " . g:rspec_last_single . ")"
+  make!
+  cw
+  cc
 endfunc
 
 func! DetectZeus()
@@ -144,8 +181,8 @@ func! PeaceOfMind()
   %s/\s\+$//ge
   %s/\s\+$//ge
   exe "normal `z"
-  "exe "set fenc=utf-8"
-  "exe "set ff=unix"
+  exe "set fenc=utf-8"
+  exe "set ff=unix"
   exe "retab"
 " exe "normal gg=G"
 endfunc
@@ -162,6 +199,33 @@ autocmd FileType ruby  :autocmd BufWrite * :call PeaceOfMind() "| call RubySynta
 autocmd FileType eruby :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType html  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType yaml  :autocmd BufWrite * :call PeaceOfMind()
+autocmd FileType scss  :autocmd BufWrite * :call PeaceOfMind()
+autocmd FileType ruby,eruby
+      \ set foldmethod=expr |
+      \ set foldexpr=getline(v:lnum)=~'^\\s*#' |
+      \ set foldlevelstart=99 |
+      \ set foldlevel=999
+
+" Spell Checking for Yaml
+autocmd FileType yaml,markdown setlocal spell
+autocmd BufRead,BufWrite .git/COMMIT_EDITMSG setlocal spell
+autocmd BufRead,BufNewFile */config/locales/*.yml call SetI18nFileSpellLang()
+
+func! I18nMode()
+  windo setlocal scrollbind | setlocal cursorbind | setlocal cursorline
+  windo noremap <buffer> j <Down><C-w><C-w><C-w><C-w>
+  windo noremap <buffer> k <Up><C-w><C-w><C-w><C-w>
+endfunction
+command I18nMode :call I18nMode()
+
+func! SetI18nFileSpellLang()
+  let l:filelocale = matchlist(expand("%"), '\v(\l{2}(-\u{2})?)\.yml')[1]
+  let l:vimlocale = join(split(tolower(filelocale), "-"), "_")
+  let &spelllang=l:vimlocale
+endfunction
+
+" Ejs support
+au BufNewFile,BufRead *.ejs set filetype=html
 
 noremap <leader>db  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.toggle_breakpoint()<CR>
 noremap <leader>dv  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.open_variables()<CR>

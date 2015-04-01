@@ -1,7 +1,7 @@
 let g:netrw_dirhistmax  =10
 let g:netrw_dirhist_cnt =5
-let g:netrw_dirhist_1='/Users/felipenavas/project/runrunit/app/assets'
-let g:netrw_dirhist_2='/Users/felipenavas/project/runrunit/lib/tasks'
-let g:netrw_dirhist_3='/Users/felipenavas/.vim/bundle/vim-ruby-debugger/tmp'
-let g:netrw_dirhist_4='/Users/felipenavas/.vim/bundle/vim-ruby-debugger'
-let g:netrw_dirhist_5='/Users/felipenavas/.rvm/gems/ruby-1.9.2-p320@runrun.it/gems/right_aws-3.0.3'
+let g:netrw_dirhist_1='/Users/felipenavas/project/runrunit/lib/generators/supermodel/templates'
+let g:netrw_dirhist_2='/Users/felipenavas/project/runrunit/app/assets/javascripts/backbone/associations'
+let g:netrw_dirhist_3='/Users/felipenavas/project/mundipagg'
+let g:netrw_dirhist_4='/Users/felipenavas/Downloads/markup 3/js'
+let g:netrw_dirhist_5='/Users/felipenavas/Downloads/markup/scss'

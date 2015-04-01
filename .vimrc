@@ -15,11 +15,23 @@ set hidden                " Allow hidden buffers
 set previewheight=15      " Increase the Fugitive Gstatus window
 
 syntax on
-filetype plugin indent on
 
 "set encoding=utf-8        " Every new file will be utf-8
 "set fileformat=unix       " LF is default EOL for new files
 "set fileformats=unix,dos  " Empty files will be open as Unix
+
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+" let Vundle manage Vundle, required
+Plugin 'gmarik/Vundle.vim'
+Plugin 'tpope/vim-fugitive'
+Plugin 'wincent/command-t'
+
+" All of your Plugins must be added before the following line
+call vundle#end()         " required
+filetype plugin indent on
 
 let g:ruby_debugger_no_maps = 1
 let g:ruby_debugger_progname = 'mvim'

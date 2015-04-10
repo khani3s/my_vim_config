@@ -28,6 +28,7 @@ call vundle#begin()
 Plugin 'gmarik/Vundle.vim'
 Plugin 'tpope/vim-fugitive'
 Plugin 'wincent/command-t'
+Plugin 'airblade/vim-gitgutter'
 
 " All of your Plugins must be added before the following line
 call vundle#end()         " required
@@ -139,6 +140,7 @@ endfunc
 " Shortcut to rapidly toggle line numbers
 nnoremap <leader>n :set number!<CR>
 nnoremap <leader>N :set relativenumber!<CR>
+noremap  <leader>C-N :GitGutterToggle<CR>
 
 nnoremap <leader>w :echo bufname("%")<CR>
 
@@ -158,7 +160,7 @@ vnoremap << <gv
 vnoremap >> >gv
 vnoremap = =gv
 
-" Ctrl+X, Ctrl+C and Ctrl+V
+" Like Ctrl+X, Ctrl+C and Ctrl+V
 " Only works after installing vim-gnome package on Ubuntu 10.04 (why?)
 vnoremap <leader>x "+d
 vnoremap <leader>c "+y

@@ -29,6 +29,7 @@ Plugin 'gmarik/Vundle.vim'
 Plugin 'tpope/vim-fugitive'
 Plugin 'wincent/command-t'
 Plugin 'airblade/vim-gitgutter'
+"Plugin 'scrooloose/syntastic.git'
 
 " All of your Plugins must be added before the following line
 call vundle#end()         " required
@@ -87,7 +88,7 @@ nnoremap <leader><C-R> <Esc>:w<CR>:call RSpecCurrent()<CR>
 
 " Syntax Checking
 "nnoremap <leader>s <Esc>:w<CR>:!ruby -c %<CR>
-nnoremap <leader>s <Esc>:w<CR>:RuboCop()<CR>
+nnoremap <leader>s <Esc>:w<CR>:SyntasticCheck<CR>
 
 " Complexity Checking
 nnoremap <leader>C <Esc>:w<CR>:!flog -e --all %<CR>
@@ -251,3 +252,13 @@ noremap <leader>dn  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugge
 noremap <leader>dc  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.continue()<CR>
 noremap <leader>de  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.exit()<CR>
 noremap <leader>dd  :call ruby_debugger#load_debugger() <bar> call g:RubyDebugger.remove_breakpoints()<CR>
+
+" Syntastic
+let g:syntastic_javascript_checkers = ['jshint']
+let g:syntastic_ruby_checkers = ['mri', 'rubocop', 'reek']
+let g:syntastic_mode_map = { 'mode': 'passive' }
+"                          \ 'active_filetypes': ['ruby', 'javascript'] }
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 0
+let g:syntastic_check_on_wq = 0

@@ -22,6 +22,7 @@ set ignorecase                                 " Case-insensitive searching
 set backspace=2                                " Allow backspace key to erase previously entered characters
 set hidden                                     " Allow hidden buffers
 set previewheight=15                           " Increase the Fugitive Gstatus window
+set autoread                                   " Automatically refresh any unchanged files
 
 "let mapleader = '\'                           " Default is \
 "let maplocalleader = '\'                      " Default is \
@@ -58,18 +59,44 @@ Plugin 'VundleVim/Vundle.vim'
 
 Plugin 'ctrlpvim/ctrlp.vim'
 " You need to compile it! RTFM
+" You also need to install
+" pip2 --no-cache-dir install -U neovim
+" And make shure that :echo has('python') returns 1
 Plugin 'JazzCore/ctrlp-cmatcher'
 Plugin 'jasoncodes/ctrlp-modified.vim'
 
 " Colorscheme
+Plugin 'gosukiwi/vim-atom-dark'
 Plugin 'tomasr/molokai'
 Plugin 'zeis/vim-kolor'
 
 Plugin 'scrooloose/nerdtree'
+Plugin 'scrooloose/nerdcommenter'
 Plugin 'scrooloose/syntastic.git'
 
-Plugin 'bling/vim-airline'
+Plugin 'KabbAmine/zeavim.vim'
+let g:zv_zeal_executable = '/Applications/Zeal.app/Contents/MacOS/Zeal'
+let g:zv_docsets_dir = '/Users/felipenavas/Library/Application Support/Zeal/Zeal/docsets'
+let g:zv_file_types = {
+            \ 'ruby': 'ruby 2,ruby on rails 3',
+            \ 'javascript': 'backbonejs,javascript,underscore,marionettejs'
+        \ }
+let g:zv_disable_mapping = 1
+nmap gzz <Plug>Zeavim
+vmap gzz <Plug>ZVVisSelection
+nmap gz <Plug>ZVMotion
+nmap gZ <Plug>ZVKeyDocset
+
+"Plugin 'bling/vim-airline'
+Plugin 'vim-airline/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
 Plugin 'tpope/vim-fugitive'
+Plugin 'gregsexton/gitv'
+Plugin 'tpope/vim-bundler'
+Plugin 'tpope/vim-rails'
+Plugin 'tpope/vim-abolish'
+Plugin 'vim-scripts/tComment'
+Plugin 'bogado/file-line'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'chrisbra/vim-diff-enhanced'
@@ -77,13 +104,43 @@ Plugin 'tpope/vim-surround'
 Plugin 'severin-lemaignan/vim-minimap'
 
 Plugin 'easymotion/vim-easymotion'
+
+map <leader><Leader>l <Plug>(easymotion-lineforward)
+map <Leader><leader>j <Plug>(easymotion-j)
+map <Leader><leader>k <Plug>(easymotion-k)
+map <Leader><leader>h <Plug>(easymotion-linebackward)
+
+let g:EasyMotion_startofline = 0 " keep cursor column when JK motion
+
 Plugin 'rking/ag.vim'
 Plugin 'majutsushi/tagbar'
 
 Plugin 'terryma/vim-multiple-cursors'
-" ntpeters/vim-better-whitespace"
 
+Plugin 'junegunn/vim-easy-align'
+Plugin 'vim-scripts/lastpos.vim'
+Plugin 'tommcdo/vim-exchange'
 
+Plugin 'vim-scripts/SQLUtilities'
+Plugin 'vim-scripts/Align'
+Plugin 'Zuckonit/vim-airline-tomato'
+
+let g:tomato#show_clock = 1
+let g:tomato#show_count_down = 1
+let g:tomato#interval = 60 * 45
+let g:tomato#rest_time = 60 * 5
+
+Plugin 'mattn/webapi-vim'
+Plugin 'mattn/gist-vim'
+
+let g:gist_show_privates = 1
+
+"Plugin 'vim-javascript'
+"Plugin" 'ternjs/tern_for_vim'
+"https://github.com/Valloric/YouCompleteMe
+"https://github.com/garbas/vim-snipmate
+
+"Plugin 'ntpeters/vim-better-whitespace'
 "Plugin 'emmet-vim'
 "Plugin 'vim-git'
 "Plugin 'vim-javascript'
@@ -92,17 +149,58 @@ Plugin 'terryma/vim-multiple-cursors'
 "Plugin 'vim-ruby-complexity'
 "Plugin 'vim-ruby-debugger'
 
+Plugin 'mbbill/undotree'
+if has("persistent_undo")
+    set undodir=~/.cache/.undodir/
+    set undofile
+endif
+
 if vundle_installed == 0
     echo "Installing Bundles, please ignore key map error messages"
     echo ""
     :VundleInstall
 endif
 
+
 " All of your Plugins must be added before the following line
 call vundle#end()         " required
 filetype plugin indent on
 
-colorscheme molokai
+if has('nvim')
+  :tnoremap <C-w>h <C-\><C-n><C-w>h
+  :tnoremap <C-w>j <C-\><C-n><C-w>j
+  :tnoremap <C-w>k <C-\><C-n><C-w>k
+  :tnoremap <C-w>l <C-\><C-n><C-w>l
+  :tnoremap <C-w><Left> <C-\><C-n><C-w>h
+  :tnoremap <C-w><Down> <C-\><C-n><C-w>j
+  :tnoremap <C-w><Up> <C-\><C-n><C-w>k
+  :tnoremap <C-w><Right> <C-\><C-n><C-w>l
+  :tnoremap <C-w><C-w> <C-\><C-n><C-w><C-w>
+  :tnoremap <Esc><Esc> <C-\><C-n>
+  nnoremap <leader>z :terminal<CR>source /etc/bashrc<CR>source $HOME/.bash_profile<CR>clear<CR>
+
+endif
+
+let g:terminal_scrollback_buffer_size=100000
+
+"fun! DdeleteOrQuitIfLast()
+"    bdelete
+"    let bufcnt = len(filter(range(1, bufnr('$')), 'buflisted(v:val)'))
+"    if bufcnt < 2
+"        quit
+"    endif
+"endfun
+
+"cabbrev q bdelete
+cabbrev q close
+
+"noremap <Up> <NOP>
+"noremap <Down> <NOP>
+"noremap <Left> <NOP>
+"noremap <Right> <NOP>
+
+"colorscheme molokai
+colorscheme atom-dark-256
 "hi DiffAdd    ctermfg=233 ctermbg=194 guifg=#003300 guibg=#DDFFDD gui=none cterm=none
 "hi DiffChange ctermbg=255  guibg=#ececec gui=none   cterm=none
 "hi DiffText   ctermfg=233  ctermbg=189  guifg=#000033 guibg=#DDDDFF gui=none cterm=none
@@ -135,20 +233,35 @@ let g:ctrlp_map = '<leader>t'
 "nnoremap <leader>t <Esc>:CtrlP<CR>
 nnoremap <leader>b <Esc>:CtrlPBuffer<CR>
 nnoremap <leader>m <Esc>:CtrlPMRU<CR>
+"let g:ctrlp_match_func = {'match': 'cpsm#CtrlPMatch'}
 let g:ctrlp_match_func = { 'match' : 'matcher#cmatch' }
 let g:ctrlp_match_window = 'min:4,max:72'
+" Ignore some folders and files for CtrlP indexing
+let g:ctrlp_custom_ignore = {
+  \ 'dir':  '\.git$\|\.sass-cache$|\.hg$\|\.svn$\|\.yardoc\|public$|log\|tmp$',
+  \ 'file': '\.so$\|\.dat$|\.DS_Store$'
+  \ }
+if(isdirectory(expand(getcwd() . "/.git")))
+  let g:ctrlp_cache_dir = $HOME . '/.cache/ctrlp'
+  let g:ctrlp_user_command = ['.git/', 'git ls-files --cached --others  --exclude-standard %s']
+else
+  let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+  let g:ctrlp_use_caching = 0
+endif
 
 "Delete closed fugitive buffers
 autocmd BufReadPost fugitive://* set bufhidden=delete
 
 " Jump to last cursor position
-au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
+"au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
 
 " Hack for visual selection highlight work properly in vim
 "hi Visual cterm=reverse
 
 " Highlights for Ident Guides Plugin
+let g:indent_guides_enable_on_vim_startup = 1
 let g:indent_guides_auto_colors = 0
+"let g:indent_guides_color_change_percent = 90
 hi IndentGuidesOdd  guibg=#070707 ctermbg=234
 hi IndentGuidesEven guibg=#1a1a1a ctermbg=236
 
@@ -162,6 +275,7 @@ if(isdirectory(expand(getcwd() . "/.git")))
 else
   nnoremap <leader>g <Esc>:execute "Ag '" . expand("<cword>") . "'"<CR>
 endif
+autocmd QuickFixCmdPost *grep* cwindow
 
 
 " Shortcut to open Gstatus
@@ -219,10 +333,10 @@ func! RSpecCurrent()
   if expand('%:t') =~ "_spec.rb"
     let g:rspec_last_current = expand("%p") . ":" . line(".")
   endif
-  execute "compiler rspec | set makeprg=(clear\\ &&\\ " . DetectZeus() . "\\ rspec\\ --color\\ " . g:rspec_last_current . ")"
-  make!
-  cw
-  cc
+  execute ":terminal source /etc/bashrc;source $HOME/.bash_profile;clear;rspec --color " . g:rspec_last_current
+  "make!
+  "cw
+  "cc
 endfunc
 
 func! RspecSingle()
@@ -340,8 +454,35 @@ func! SetI18nFileSpellLang()
   let &spelllang=l:vimlocale
 endfunction
 
+nnoremap <leader>" :call ChangeQuotes();
+
+func! ChangeQuotes()
+  if getline('.') =~ '"'
+    exe "s/\"/'/g"
+  else
+    if getline('.') =~ ''''
+      exe "s/'/\"/g"
+    endif
+  endif
+endfunction
+
 " Ejs support
 au BufNewFile,BufRead *.ejs set filetype=html
+
+au FileType qf call AdjustWindowHeight(1, 10)
+function! AdjustWindowHeight(minheight, maxheight)
+   let l = 1
+   let n_lines = 0
+   let w_width = winwidth(0)
+   while l <= line('$')
+       " number to float for division
+       let l_len = strlen(getline(l)) + 0.0
+       let line_width = l_len/w_width
+       let n_lines += float2nr(ceil(line_width))
+       let l += 1
+   endw
+   exe max([min([n_lines, a:maxheight]), a:minheight]) . "wincmd _"
+endfunction
 
 " Syntastic
 let g:syntastic_javascript_checkers = ['jshint']

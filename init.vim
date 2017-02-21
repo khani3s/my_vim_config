@@ -1,3 +1,8 @@
+" Remove mouse support
+set mouse
+
+let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+
 if has('unnamedplus')
   set clipboard=unnamedplus
 else
@@ -7,12 +12,13 @@ endif
 set directory=~/tmp// " solve fugitive errors
 set ttyfast " u got a fast terminal
 if !has('nvim')
-    set ttyscroll=3
+  set ttyscroll=3
 else
-    set synmaxcol=2048
+  set synmaxcol=2048
 endif
 set lazyredraw " to avoid scrolling problems
 
+set shortmess=at
 set shell=bash
 set autoindent
 set smartindent
@@ -69,8 +75,15 @@ Plugin 'jasoncodes/ctrlp-modified.vim'
 Plugin 'gosukiwi/vim-atom-dark'
 Plugin 'tomasr/molokai'
 Plugin 'zeis/vim-kolor'
+Plugin 'mhartington/oceanic-next'
+Plugin 'w0ng/vim-hybrid'
+Plugin 'kristijanhusak/vim-hybrid-material'
 
 Plugin 'scrooloose/nerdtree'
+let g:NERDTreeDirArrows = 0
+let g:NERDTreeDirArrowExpandable = '▸'
+let g:NERDTreeDirArrowCollapsible = '▾'
+
 Plugin 'scrooloose/nerdcommenter'
 Plugin 'scrooloose/syntastic.git'
 
@@ -87,7 +100,6 @@ vmap gzz <Plug>ZVVisSelection
 nmap gz <Plug>ZVMotion
 nmap gZ <Plug>ZVKeyDocset
 
-"Plugin 'bling/vim-airline'
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
 Plugin 'tpope/vim-fugitive'
@@ -102,8 +114,13 @@ Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'chrisbra/vim-diff-enhanced'
 Plugin 'tpope/vim-surround'
 Plugin 'severin-lemaignan/vim-minimap'
+Plugin 'othree/javascript-libraries-syntax.vim'
+Plugin 'janko-m/vim-test'
+let test#strategy = "neovim"
+let g:test#preserve_screen = 1
 
 Plugin 'easymotion/vim-easymotion'
+Plugin 'bronson/vim-visual-star-search'
 
 map <leader><Leader>l <Plug>(easymotion-lineforward)
 map <Leader><leader>j <Plug>(easymotion-j)
@@ -178,7 +195,6 @@ if has('nvim')
   :tnoremap <C-w><C-w> <C-\><C-n><C-w><C-w>
   :tnoremap <Esc><Esc> <C-\><C-n>
   nnoremap <leader>z :terminal<CR>source /etc/bashrc<CR>source $HOME/.bash_profile<CR>clear<CR>
-
 endif
 
 let g:terminal_scrollback_buffer_size=100000
@@ -200,7 +216,8 @@ cabbrev q close
 "noremap <Right> <NOP>
 
 "colorscheme molokai
-colorscheme atom-dark-256
+"colorscheme atom-dark-256
+colorscheme OceanicNext
 "hi DiffAdd    ctermfg=233 ctermbg=194 guifg=#003300 guibg=#DDFFDD gui=none cterm=none
 "hi DiffChange ctermbg=255  guibg=#ececec gui=none   cterm=none
 "hi DiffText   ctermfg=233  ctermbg=189  guifg=#000033 guibg=#DDDDFF gui=none cterm=none
@@ -225,7 +242,8 @@ hi Visual cterm=reverse
 set laststatus=2
 set history=10000
 let g:airline_powerline_fonts = 1
-let g:airline_theme="molokai"
+"let g:airline_theme="molokai"
+let g:airline_theme='oceanicnext'
 "let g:airline_theme=powerlineish
 
 " CtrlP config
@@ -264,6 +282,7 @@ let g:indent_guides_auto_colors = 0
 "let g:indent_guides_color_change_percent = 90
 hi IndentGuidesOdd  guibg=#070707 ctermbg=234
 hi IndentGuidesEven guibg=#1a1a1a ctermbg=236
+"<SNR>10_IndentGuidesEnable[1]..indent_guides#enable[3]..indent_guides#init_script_vars[3]..indent_guides#capture_highlight:
 
 " Highlight the current cursor line
 set cursorline
@@ -276,7 +295,6 @@ else
   nnoremap <leader>g <Esc>:execute "Ag '" . expand("<cword>") . "'"<CR>
 endif
 autocmd QuickFixCmdPost *grep* cwindow
-
 
 " Shortcut to open Gstatus
 nnoremap <leader>G <Esc>:Gstatus<CR>
@@ -298,9 +316,15 @@ call CtagFunc()
 command! CtagsBackground :call CtagFunc()<CR>
 
 " Shortcut to save and run the rspec tests
-nnoremap <leader>r <Esc>:w<CR>:! clear;rspec<CR>
-nnoremap <leader>R <Esc>:w<CR>:call RspecSingle()<CR>
-nnoremap <leader><C-R> <Esc>:w<CR>:call RSpecCurrent()<CR>
+nnoremap <silent> <leader>R :TestFile<CR>
+nnoremap <silent> <leader>r :TestSuite<CR>
+nnoremap <silent> <leader>l :TestLast<CR>
+nnoremap <silent> <leader><C-R> :TestNearest<CR>
+nnoremap <silent> <leader>® :TestVisit<CR>
+
+" nnoremap <leader>r <Esc>:w<CR>:! clear;rspec<CR>
+" nnoremap <leader>R <Esc>:w<CR>:call RspecSingle()<CR>
+" nnoremap <leader><C-R> <Esc>:w<CR>:call RSpecCurrent()<CR>
 
 " Syntax Checking
 "nnoremap <leader>s <Esc>:w<CR>:!ruby -c %<CR>
@@ -333,7 +357,7 @@ func! RSpecCurrent()
   if expand('%:t') =~ "_spec.rb"
     let g:rspec_last_current = expand("%p") . ":" . line(".")
   endif
-  execute ":terminal source /etc/bashrc;source $HOME/.bash_profile;clear;rspec --color " . g:rspec_last_current
+  execute "split term://source /etc/bashrc;source $HOME/.bash_profile;clear;" . DetectZeus() . " rspec --color " . g:rspec_last_current
   "make!
   "cw
   "cc

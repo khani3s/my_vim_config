@@ -310,7 +310,7 @@ function! CtagFunc()
       silent execute ":!tmux new -d " . "\"". s:ctag_command . "\""
     endif
 endfunction
-call CtagFunc()
+"call CtagFunc()
 
 "command! Ctags :! expand(s:ctag_command)
 command! CtagsBackground :call CtagFunc()<CR>
@@ -478,7 +478,7 @@ func! SetI18nFileSpellLang()
   let &spelllang=l:vimlocale
 endfunction
 
-nnoremap <leader>" :call ChangeQuotes();
+nnoremap <leader>" :call ChangeQuotes()<CR>
 
 func! ChangeQuotes()
   if getline('.') =~ '"'

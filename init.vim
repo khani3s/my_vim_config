@@ -1,3 +1,4 @@
+set nocompatible
 " Remove mouse support
 set mouse
 
@@ -100,6 +101,10 @@ vmap gzz <Plug>ZVVisSelection
 nmap gz <Plug>ZVMotion
 nmap gZ <Plug>ZVKeyDocset
 
+" Syntax
+Plugin 'lifepillar/pgsql.vim.git'
+let g:sql_type_default = 'pgsql'
+
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
 Plugin 'tpope/vim-fugitive'
@@ -118,6 +123,7 @@ Plugin 'othree/javascript-libraries-syntax.vim'
 Plugin 'janko-m/vim-test'
 let test#strategy = "neovim"
 let g:test#preserve_screen = 1
+let test#ruby#rspec#executable = 'source $HOME/.bash_profile; cd . ; bundle exec rspec'
 
 Plugin 'easymotion/vim-easymotion'
 Plugin 'bronson/vim-visual-star-search'
@@ -140,12 +146,12 @@ Plugin 'tommcdo/vim-exchange'
 
 Plugin 'vim-scripts/SQLUtilities'
 Plugin 'vim-scripts/Align'
-Plugin 'Zuckonit/vim-airline-tomato'
 
-let g:tomato#show_clock = 1
-let g:tomato#show_count_down = 1
-let g:tomato#interval = 60 * 45
-let g:tomato#rest_time = 60 * 5
+" Plugin 'Zuckonit/vim-airline-tomato'
+" let g:tomato#show_clock = 1
+" let g:tomato#show_count_down = 1
+" let g:tomato#interval = 60 * 45
+" let g:tomato#rest_time = 60 * 5
 
 Plugin 'mattn/webapi-vim'
 Plugin 'mattn/gist-vim'
@@ -171,6 +177,23 @@ if has("persistent_undo")
     set undodir=~/.cache/.undodir/
     set undofile
 endif
+
+Plugin 'Shougo/deoplete.nvim'
+Plugin 'carlitux/deoplete-ternjs'
+normal :UpdateRemotePlugins<CR>
+let g:deoplete#enable_at_startup = 1
+function g:Multiple_cursors_before()
+  let g:deoplete#disable_auto_complete = 1
+endfunction
+function g:Multiple_cursors_after()
+  let g:deoplete#disable_auto_complete = 0
+endfunction
+
+Plugin 'c9s/helper.vim'
+Plugin 'c9s/treemenu.vim'
+Plugin 'c9s/vikube.vim'
+"let g:vikube_autoupdate = 0
+let g:vikube_default_logs_tail = 1000
 
 if vundle_installed == 0
     echo "Installing Bundles, please ignore key map error messages"
@@ -241,7 +264,7 @@ hi Visual cterm=reverse
 "Always show the status bar
 set laststatus=2
 set history=10000
-let g:airline_powerline_fonts = 1
+"let g:airline_powerline_fonts = 1
 "let g:airline_theme="molokai"
 let g:airline_theme='oceanicnext'
 "let g:airline_theme=powerlineish
@@ -270,6 +293,9 @@ endif
 "Delete closed fugitive buffers
 autocmd BufReadPost fugitive://* set bufhidden=delete
 
+" Improve
+let g:fugitive_summary_format = '%s %cr <%an>'
+
 " Jump to last cursor position
 "au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
 
@@ -286,14 +312,32 @@ hi IndentGuidesEven guibg=#1a1a1a ctermbg=236
 
 " Highlight the current cursor line
 set cursorline
-hi CursorLine term=underline ctermbg=236 guibg=#121212
+hi CursorLine cterm=none ctermbg=236 guibg=#121212
 
 " Ggrep
-if(isdirectory(expand(getcwd() . "/.git")))
-  nnoremap <leader>g <Esc>:execute "Ggrep '" . expand("<cword>") . "'"<CR>
-else
-  nnoremap <leader>g <Esc>:execute "Ag '" . expand("<cword>") . "'"<CR>
-endif
+function! GetVisualSelection()
+  " Why is this not a built-in Vim script function?!
+  let [line_start, column_start] = getpos("'<")[1:2]
+  let [line_end, column_end] = getpos("'>")[1:2]
+  let lines = getline(line_start, line_end)
+  if len(lines) == 0
+      return ''
+  endif
+  let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
+  let lines[0] = lines[0][column_start - 1:]
+  return join(lines, "\n")
+endfunction
+
+function! GgrepCmd()
+  if(isdirectory(expand(getcwd() . "/.git")))
+    return "Ggrep"
+  else
+    return "Ag"
+  endif
+endfunction
+
+nnoremap <leader>g <Esc>:execute GgrepCmd() . " '" . expand("<cword>") . "'"<CR>
+vnoremap <leader>g <Esc>:execute GgrepCmd() . " '" . GetVisualSelection() . "'"<CR>
 autocmd QuickFixCmdPost *grep* cwindow
 
 " Shortcut to open Gstatus
@@ -450,6 +494,7 @@ autocmd FilterWritePre * if &diff | setlocal wrap< | endif
 
 autocmd FileType ruby  :autocmd BufWrite * :call PeaceOfMind() "| call RubySyntaxCheck()
 autocmd FileType eruby :autocmd BufWrite * :call PeaceOfMind()
+autocmd FileType sql   :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType html  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType yaml  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType scss  :autocmd BufWrite * :call PeaceOfMind()
@@ -509,11 +554,29 @@ function! AdjustWindowHeight(minheight, maxheight)
 endfunction
 
 " Syntastic
-let g:syntastic_javascript_checkers = ['jshint']
+let g:syntastic_javascript_checkers = ['standard']
+let g:syntastic_javascript_standard_args = "--fix"
 let g:syntastic_ruby_checkers = ['mri', 'rubocop', 'reek']
+let g:syntastic_filetype_map = { "erb": "javascript" }
 let g:syntastic_mode_map = { 'mode': 'passive',
-                           \ 'active_filetypes': ['javascript'] }
+                           \ 'active_filetypes': ['javascript' , 'ruby'] }
 let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 0
 let g:syntastic_check_on_wq = 0
+
+function! SyntasticCheckHook(errors)
+
+  silent e %
+endfunction
+
+func! RunrunitJsSyntax()
+  syntax match JavascriptRunrunitRx /Runrunit\.bus$/
+  highlight link JavascriptRunrunitRx Constant
+  "syntax match JavascriptRunrunitEvents /Runrunit\.?[a-zA-Z0-9.]*\.Events\.[a-zA-Z0-9.]\+/
+  syntax match JavascriptRunrunitEvents /Runrunit\([a-zA-Z0-9.]\)*\.Events\(\.[a-zA-Z0-9.]\+\)\?/
+  highlight link JavascriptRunrunitEvents Constant
+endfunc
+
+"autocmd FileType javascript :autocmd BufRead * :call RunrunitJsSyntax()
+autocmd FileType javascript :call RunrunitJsSyntax()

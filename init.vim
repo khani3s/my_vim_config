@@ -65,11 +65,14 @@ call vundle#rc(s:editor_root . '/bundle')
 Plugin 'VundleVim/Vundle.vim'
 
 Plugin 'ctrlpvim/ctrlp.vim'
+
 " You need to compile it! RTFM
-" You also need to install
-" pip2 --no-cache-dir install -U neovim
-" And make shure that :echo has('python') returns 1
-Plugin 'JazzCore/ctrlp-cmatcher'
+" Execute :checkhealth and follow instructions to make python work
+" sudo apt-get install cmake libboost-all-dev
+" cd ~/.vim/bundle/cpsm
+" PY3=ON ./install.sh
+Plugin 'nixprime/cpsm'
+
 Plugin 'jasoncodes/ctrlp-modified.vim'
 
 " Colorscheme
@@ -86,7 +89,7 @@ let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 
 Plugin 'scrooloose/nerdcommenter'
-Plugin 'scrooloose/syntastic.git'
+" Plugin 'scrooloose/syntastic.git'
 
 Plugin 'KabbAmine/zeavim.vim'
 let g:zv_zeal_executable = '/Applications/Zeal.app/Contents/MacOS/Zeal'
@@ -178,16 +181,21 @@ if has("persistent_undo")
     set undofile
 endif
 
-Plugin 'Shougo/deoplete.nvim'
-Plugin 'carlitux/deoplete-ternjs'
-normal :UpdateRemotePlugins<CR>
-let g:deoplete#enable_at_startup = 1
-function g:Multiple_cursors_before()
-  let g:deoplete#disable_auto_complete = 1
-endfunction
-function g:Multiple_cursors_after()
-  let g:deoplete#disable_auto_complete = 0
-endfunction
+
+"Plugin 'syntastic'
+"Plugin 'vim-airline-tomato'
+"Plugin 'vim-javascript'  
+
+"Plugin 'Shougo/deoplete.nvim'
+"Plugin 'carlitux/deoplete-ternjs'
+"normal :UpdateRemotePlugins<CR>
+"let g:deoplete#enable_at_startup = 1
+"function g:Multiple_cursors_before()
+"  let g:deoplete#disable_auto_complete = 1
+"endfunction
+"function g:Multiple_cursors_after()
+"  let g:deoplete#disable_auto_complete = 0
+"endfunction
 
 Plugin 'c9s/helper.vim'
 Plugin 'c9s/treemenu.vim'
@@ -274,8 +282,7 @@ let g:ctrlp_map = '<leader>t'
 "nnoremap <leader>t <Esc>:CtrlP<CR>
 nnoremap <leader>b <Esc>:CtrlPBuffer<CR>
 nnoremap <leader>m <Esc>:CtrlPMRU<CR>
-"let g:ctrlp_match_func = {'match': 'cpsm#CtrlPMatch'}
-let g:ctrlp_match_func = { 'match' : 'matcher#cmatch' }
+let g:ctrlp_match_func = {'match': 'cpsm#CtrlPMatch'}
 let g:ctrlp_match_window = 'min:4,max:72'
 " Ignore some folders and files for CtrlP indexing
 let g:ctrlp_custom_ignore = {
@@ -496,7 +503,7 @@ autocmd FileType ruby  :autocmd BufWrite * :call PeaceOfMind() "| call RubySynta
 autocmd FileType eruby :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType sql   :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType html  :autocmd BufWrite * :call PeaceOfMind()
-autocmd FileType yaml  :autocmd BufWrite * :call PeaceOfMind()
+"autocmd FileType yaml  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType scss  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType javascript :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType ruby,eruby
@@ -554,21 +561,21 @@ function! AdjustWindowHeight(minheight, maxheight)
 endfunction
 
 " Syntastic
-let g:syntastic_javascript_checkers = ['standard']
-let g:syntastic_javascript_standard_args = "--fix"
-let g:syntastic_ruby_checkers = ['mri', 'rubocop', 'reek']
-let g:syntastic_filetype_map = { "erb": "javascript" }
-let g:syntastic_mode_map = { 'mode': 'passive',
-                           \ 'active_filetypes': ['javascript' , 'ruby'] }
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 0
-let g:syntastic_check_on_wq = 0
 
-function! SyntasticCheckHook(errors)
-
-  silent e %
-endfunction
+"  let g:syntastic_javascript_checkers = ['standard']
+"  let g:syntastic_javascript_standard_args = "--fix"
+"  let g:syntastic_ruby_checkers = ['mri', 'rubocop', 'reek']
+"  let g:syntastic_filetype_map = { "erb": "javascript" }
+"  let g:syntastic_mode_map = { 'mode': 'passive',
+"                             \ 'active_filetypes': ['javascript' , 'ruby'] }
+"  let g:syntastic_always_populate_loc_list = 1
+"  let g:syntastic_auto_loc_list = 1
+"  let g:syntastic_check_on_open = 0
+"  let g:syntastic_check_on_wq = 0
+"
+"  function! SyntasticCheckHook(errors)
+"    silent e %
+"  endfunction
 
 func! RunrunitJsSyntax()
   syntax match JavascriptRunrunitRx /Runrunit\.bus$/
@@ -579,4 +586,5 @@ func! RunrunitJsSyntax()
 endfunc
 
 "autocmd FileType javascript :autocmd BufRead * :call RunrunitJsSyntax()
+"autocmd bufwritepost *.js silent !standard --fix %
 autocmd FileType javascript :call RunrunitJsSyntax()

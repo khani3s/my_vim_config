@@ -64,16 +64,17 @@ call vundle#rc(s:editor_root . '/bundle')
 "let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
 
-Plugin 'ctrlpvim/ctrlp.vim'
-
 " You need to compile it! RTFM
 " Execute :checkhealth and follow instructions to make python work
 " sudo apt-get install cmake libboost-all-dev
 " cd ~/.vim/bundle/cpsm
 " PY3=ON ./install.sh
+Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'nixprime/cpsm'
-
 Plugin 'jasoncodes/ctrlp-modified.vim'
+
+
+Plugin '0xStabby/chatgpt-vim'
 
 " Colorscheme
 Plugin 'gosukiwi/vim-atom-dark'
@@ -122,7 +123,9 @@ Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'chrisbra/vim-diff-enhanced'
 Plugin 'tpope/vim-surround'
 Plugin 'severin-lemaignan/vim-minimap'
-Plugin 'othree/javascript-libraries-syntax.vim'
+"Plugin 'maxmellon/vim-jsx-pretty'
+"Plugin 'othree/javascript-libraries-syntax.vim'
+Plugin 'vim-javascript'
 Plugin 'janko-m/vim-test'
 let test#strategy = "neovim"
 let g:test#preserve_screen = 1
@@ -161,7 +164,6 @@ Plugin 'mattn/gist-vim'
 
 let g:gist_show_privates = 1
 
-"Plugin 'vim-javascript'
 "Plugin" 'ternjs/tern_for_vim'
 "https://github.com/Valloric/YouCompleteMe
 "https://github.com/garbas/vim-snipmate
@@ -181,10 +183,12 @@ if has("persistent_undo")
     set undofile
 endif
 
+"Plugin 'henrik/vim-yaml-flattener'
+"Plugin 'khani3s/vim-yaml-flattener'
+"au FileType yaml map <buffer> <leader>y :YAMLToggleFlatness<CR>
 
 "Plugin 'syntastic'
 "Plugin 'vim-airline-tomato'
-"Plugin 'vim-javascript'  
 
 "Plugin 'Shougo/deoplete.nvim'
 "Plugin 'carlitux/deoplete-ternjs'
@@ -348,7 +352,7 @@ vnoremap <leader>g <Esc>:execute GgrepCmd() . " '" . GetVisualSelection() . "'"<
 autocmd QuickFixCmdPost *grep* cwindow
 
 " Shortcut to open Gstatus
-nnoremap <leader>G <Esc>:Gstatus<CR>
+nnoremap <leader>G <Esc>:Git<CR>
 
 " Generate Ctags
 "
@@ -503,7 +507,7 @@ autocmd FileType ruby  :autocmd BufWrite * :call PeaceOfMind() "| call RubySynta
 autocmd FileType eruby :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType sql   :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType html  :autocmd BufWrite * :call PeaceOfMind()
-"autocmd FileType yaml  :autocmd BufWrite * :call PeaceOfMind()
+autocmd FileType yaml  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType scss  :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType javascript :autocmd BufWrite * :call PeaceOfMind()
 autocmd FileType ruby,eruby
